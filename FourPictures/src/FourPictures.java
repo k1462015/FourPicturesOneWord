@@ -1,48 +1,87 @@
 
-
 public class FourPictures {
 	String letters;
 	String[] fileNames;
 	String word;
-	String revealedWord;
-	
-	public FourPictures(String word,String letters,String[] fileNames){
+	String[] revealedWord;
+	int correctLetters;
+
+	public FourPictures(String word, String letters, String[] fileNames) {
 		this.letters = letters;
 		this.fileNames = fileNames;
 		this.word = word;
-		revealedWord = "";
-		for(int i = 0;i < this.word.length();i++){
-			revealedWord += "_ ";
+		correctLetters = 0;
+		revealedWord = new String[word.length()];
+		for (int i = 0; i < this.word.length(); i++) {
+			revealedWord[i] = "_ ";
 		}
 	}
-	
-	public String[] getLetters() {
-		String[] letterArray = new String[letters.length()];
-		for(int i = 0; i < letterArray.length;i++){
-			letterArray[i] = letters.substring(i, i+1);
-		}
-		return letterArray;
+
+	public String getLetters() {
+		return letters;
 	}
-	
+
 	public String[] getWord() {
 		String[] wordArray = new String[word.length()];
-		for(int i = 0; i < word.length();i++){
-			wordArray[i] = word.substring(i, i+1);
+		for (int i = 0; i < word.length(); i++) {
+			wordArray[i] = word.substring(i, i + 1);
 		}
 		return wordArray;
 	}
-	
+
 	public String[] getFileNames() {
 		return fileNames;
 	}
-	
-	public String[] getRWord(){
-		String[] revealedArray = new String[revealedWord.length()];
-		for(int i = 0; i < revealedWord.length();i++){
-			System.out.println(revealedWord.substring(i, i+1));
-			revealedArray[i] = revealedWord.substring(i, i+1);
+
+	public String[] getRWord() {
+		return revealedWord;
+	}
+
+	// public String getRWord(){
+	// return revealedWord;
+	// }
+
+	public String updateRWord(String input) {
+		for (int i = 0; i < revealedWord.length; i++) {
+			if (input.equals(word.substring(i, i + 1))) {
+				correctLetters++;
+				revealedWord[i] = input;
+			}
 		}
-		return revealedArray;
+		String rWord = "";
+		for (String s : revealedWord) {
+			rWord += s + " ";
+		}
+		return rWord;
+	}
+
+	public boolean checkAllCorrect() {
+		if (correctLetters == word.length()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public String[] remainingLetter() {
+		String[] remainingLetter = new String[1];
+
+		for (int i = 0; i < revealedWord.length; i++) {
+
+			String temp = revealedWord[i].replaceAll("\\s+", "");
+			System.out.println("[" + temp + "]");
+			// System.out.print(temp.equals("_"));
+			if (remainingLetter[0] != null) {
+
+			} else {
+				if (temp.equals("_")) {
+					remainingLetter[0] = word.substring(i, i + 1);
+				}
+			}
+
+		}
+		return remainingLetter;
+
 	}
 
 }

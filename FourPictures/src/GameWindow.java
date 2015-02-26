@@ -1,15 +1,22 @@
+import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
@@ -21,12 +28,30 @@ public class GameWindow extends JFrame {
 	JLabel revealedWord;
 	FourPictures game;
 	ArrayList<JButton> buttonArray;
-
+	int nextLevel = 0;
+	ArrayList<FourPictures> levels;
+	JButton next;
 	private static final long serialVersionUID = 1L;
 
-	public GameWindow(FourPictures game) {
-		this.game = game;
+	public GameWindow(ArrayList<FourPictures> game) {
+		System.out.println("Current Level: " + nextLevel);
+		levels = game;
+		nextLevel++;
+		this.game = levels.get(0);
 		initUI();
+	}
+
+	public void nextLevel() {
+		if (nextLevel == levels.size()) {
+			JOptionPane.showMessageDialog(GameWindow.this, "No more levels");
+		} else {
+			System.out.println("Current Level: " + nextLevel);
+			this.game = levels.get(nextLevel);
+			this.remove(mainPanel);
+			initUI();
+			repaint();
+			nextLevel++;
+		}
 	}
 
 	private void initUI() {
@@ -40,7 +65,15 @@ public class GameWindow extends JFrame {
 		add(mainPanel);
 
 		makeNorth();
-		makeCenter();
+		try {
+			makeCenter();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		makeSouth();
 		pack();
 
@@ -66,15 +99,17 @@ public class GameWindow extends JFrame {
 
 	}
 
-	public void makeCenter() {
-		// Create middle
+	public void makeCenter() throws MalformedURLException, IOException {
+		// Create centerPanel
 		centerPanel = new JPanel(new GridLayout(2, 2));
 		mainPanel.add(centerPanel);
 		String[] fileN = game.getFileNames();
 		for (int i = 0; i < fileN.length; i++) {
-			ImageIcon icon = new ImageIcon(fileN[i]);
-			JLabel tempLabel = new JLabel();
-			tempLabel.setIcon(icon);
+			System.out.println(fileN[i]);
+			Image image = ImageIO.read(new URL(fileN[i]));
+			Image newimg = image.getScaledInstance(250, 250,
+					java.awt.Image.SCALE_SMOOTH);
+			JLabel tempLabel = new JLabel(new ImageIcon(newimg));
 			centerPanel.add(tempLabel);
 		}
 
@@ -89,7 +124,7 @@ public class GameWindow extends JFrame {
 		buttonArray = new ArrayList<JButton>();
 		for (int i = 0; i < letters.length; i++) {
 			final JButton temp = new JButton(letters[i] + "");
-			
+
 			temp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -102,7 +137,6 @@ public class GameWindow extends JFrame {
 
 			});
 			buttonArray.add(temp);
-			
 
 		}
 		final JButton hint = new JButton("?");
@@ -111,13 +145,15 @@ public class GameWindow extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				hint.setVisible(false);
-				//System.out.println(game.remainingLetter());
+				// System.out.println(game.remainingLetter());
 				for (JButton temp : buttonArray) {
-					if (temp.getText().equals(game.remainingLetter()[0])){
+					if (temp.getText().equals(game.remainingLetter()[0])) {
+						System.out.println(game.remainingLetter()[0]);
 						String s = temp.getText();
 						revealedWord.setText(game.updateRWord(s));
 						checkAllCorrect();
 						temp.setVisible(false);
+						break;
 					}
 				}
 
@@ -125,11 +161,26 @@ public class GameWindow extends JFrame {
 
 		});
 		buttonArray.add(hint);
-		for(JButton b:buttonArray){
+		for (JButton b : buttonArray) {
 			southPanel.add(b);
 		}
-		
-	
+		// Makes next button
+		next = new JButton("Next");
+		next.setHorizontalAlignment(0);
+		next.setFont(new Font("Arial", Font.BOLD, 30));
+		next.setEnabled(false);
+		next.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				nextLevel();
+
+			}
+
+		});
+		JPanel nButtonPanel = new JPanel(new BorderLayout());
+		nButtonPanel.add(next, BorderLayout.CENTER);
+		mainPanel.add(nButtonPanel);
 
 	}
 
@@ -140,6 +191,8 @@ public class GameWindow extends JFrame {
 			correct.setHorizontalAlignment(0);
 			correct.setFont(new Font("Arial", Font.BOLD, 30));
 			southPanel.add(correct);
+			next.setEnabled(true);
+			pack();
 		}
 	}
 

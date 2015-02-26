@@ -69,7 +69,7 @@ public class FourPictures {
 		for (int i = 0; i < revealedWord.length; i++) {
 
 			String temp = revealedWord[i].replaceAll("\\s+", "");
-			System.out.println("[" + temp + "]");
+			//System.out.println("[" + temp + "]");
 			// System.out.print(temp.equals("_"));
 			if (remainingLetter[0] != null) {
 

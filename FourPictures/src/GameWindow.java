@@ -4,7 +4,6 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,25 +32,16 @@ public class GameWindow extends JFrame {
 	JButton next;
 	private static final long serialVersionUID = 1L;
 
-	public GameWindow(ArrayList<FourPictures> game) {
+	public GameWindow(ArrayList<FourPictures> levels) {
 		System.out.println("Current Level: " + nextLevel);
-		levels = game;
+		this.levels = levels;
+		
+		//Increments nextLevel ready for when next button is pressed
 		nextLevel++;
+		
+		//Sets current level to first level
 		this.game = levels.get(0);
 		initUI();
-	}
-
-	public void nextLevel() {
-		if (nextLevel == levels.size()) {
-			JOptionPane.showMessageDialog(GameWindow.this, "No more levels");
-		} else {
-			System.out.println("Current Level: " + nextLevel);
-			this.game = levels.get(nextLevel);
-			this.remove(mainPanel);
-			initUI();
-			repaint();
-			nextLevel++;
-		}
 	}
 
 	private void initUI() {
@@ -59,33 +49,32 @@ public class GameWindow extends JFrame {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
 		setSize(500, 700);
-
+		setTitle("Four Pictures, One Word");
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
 		add(mainPanel);
-
+		
+		//Creates north Panel with guess and revealedWord
 		makeNorth();
-		try {
+		//Creates center panel for images
+		try{
 			makeCenter();
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		}catch(Exception e){
 			e.printStackTrace();
 		}
+		//Creates bottom panel for keyboard and next button
 		makeSouth();
 		pack();
 
 	}
 
-	public void makeNorth() {
-		// Initilises northPanel and adds to mainPanel
+	public void makeNorth(){
+		// Initializes northPanel and adds to mainPanel
 		mainPanel.add(northPanel = new JPanel());
 
 		// Adds JLabel with label "Guessed"
 		JLabel guessed = new JLabel("Guessed: ", SwingConstants.LEFT);
-		guessed.setFont(new Font("Arial", Font.BOLD, 30));
+		guessed.setFont(new Font("Arial", Font.BOLD, 40));
 		northPanel.add(guessed);
 
 		// Adds Revealed Words
@@ -94,11 +83,16 @@ public class GameWindow extends JFrame {
 			rWord += s;
 		}
 		revealedWord = new JLabel(rWord);
-		revealedWord.setFont(new Font("Arial", Font.BOLD, 30));
+		revealedWord.setFont(new Font("Arial", Font.BOLD, 40));
 		northPanel.add(revealedWord);
 
 	}
-
+	
+	/**
+	 * Adds four pictures in a 2x2 Grid
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 */
 	public void makeCenter() throws MalformedURLException, IOException {
 		// Create centerPanel
 		centerPanel = new JPanel(new GridLayout(2, 2));
@@ -106,7 +100,10 @@ public class GameWindow extends JFrame {
 		String[] fileN = game.getFileNames();
 		for (int i = 0; i < fileN.length; i++) {
 			System.out.println(fileN[i]);
+			// Creates image from reading file path
+			System.out.println("Reading URL link");
 			Image image = ImageIO.read(new URL(fileN[i]));
+			// Resizes all images
 			Image newimg = image.getScaledInstance(250, 250,
 					java.awt.Image.SCALE_SMOOTH);
 			JLabel tempLabel = new JLabel(new ImageIcon(newimg));
@@ -116,10 +113,11 @@ public class GameWindow extends JFrame {
 	}
 
 	public void makeSouth() {
-		// Initilises center Panel and adds to Main Panel
-		southPanel = new JPanel(new GridLayout(2, 6));
+		// Initializes south Panel and adds to Main Panel
+		southPanel = new JPanel(new GridLayout(2, 5,2,2));
 		mainPanel.add(southPanel);
-		// Adds all letters bottom Panel
+
+		// Creates all JButtons for keyboard
 		char[] letters = game.getLetters().toCharArray();
 		buttonArray = new ArrayList<JButton>();
 		for (int i = 0; i < letters.length; i++) {
@@ -139,14 +137,18 @@ public class GameWindow extends JFrame {
 			buttonArray.add(temp);
 
 		}
+
+		// Creates hint JButton
 		final JButton hint = new JButton("?");
 		hint.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				hint.setVisible(false);
-				// System.out.println(game.remainingLetter());
 				for (JButton temp : buttonArray) {
+					// Retrieves one possible hint letter
+					// Then searches remaining buttons
+					// And makes matching button invisible
 					if (temp.getText().equals(game.remainingLetter()[0])) {
 						System.out.println(game.remainingLetter()[0]);
 						String s = temp.getText();
@@ -161,9 +163,30 @@ public class GameWindow extends JFrame {
 
 		});
 		buttonArray.add(hint);
+		// Adds all buttons to the southPanel
 		for (JButton b : buttonArray) {
 			southPanel.add(b);
 		}
+		// Makes next button and adds to mainPanel
+		JPanel nButtonPanel = new JPanel(new BorderLayout());
+		nButtonPanel.add(makeNext(), BorderLayout.CENTER);
+		mainPanel.add(nButtonPanel);
+
+	}
+
+	public void checkAllCorrect() {
+		if (game.checkAllCorrect()) {
+			southPanel.removeAll();
+			JLabel correct = new JLabel("Correct!");
+			correct.setHorizontalAlignment(0);
+			correct.setFont(new Font("Arial", Font.BOLD, 30));
+			southPanel.add(correct);
+			next.setEnabled(true);
+			pack();
+		}
+	}
+
+	public JButton makeNext() {
 		// Makes next button
 		next = new JButton("Next");
 		next.setHorizontalAlignment(0);
@@ -178,21 +201,25 @@ public class GameWindow extends JFrame {
 			}
 
 		});
-		JPanel nButtonPanel = new JPanel(new BorderLayout());
-		nButtonPanel.add(next, BorderLayout.CENTER);
-		mainPanel.add(nButtonPanel);
+		return next;
 
 	}
 
-	public void checkAllCorrect() {
-		if (game.checkAllCorrect()) {
-			southPanel.removeAll();
-			JLabel correct = new JLabel("Correct!");
-			correct.setHorizontalAlignment(0);
-			correct.setFont(new Font("Arial", Font.BOLD, 30));
-			southPanel.add(correct);
-			next.setEnabled(true);
-			pack();
+	public void nextLevel() {
+		// Checks if any more levels available
+		if (nextLevel == levels.size()) {
+			JOptionPane.showMessageDialog(GameWindow.this,
+					"No more levels");
+		} else {
+			System.out.println("Current Level: " + nextLevel);
+			// Sets current level to next level
+			this.game = levels.get(nextLevel);
+			// Clears current mainPanel
+			this.remove(mainPanel);
+			// Runs UI building again
+			initUI();
+			repaint();
+			nextLevel++;
 		}
 	}
 

@@ -7,3 +7,5 @@ of blanks is the length of the word. The difference is that the player is given 
 letters (of which just a few are in the word) and they must choose from these.
 
 Awarded Mark: 100%
+
+<img src="https://i.gyazo.com/5ea9401694685b0ae28ae4bfbc12482a.jpg" height="500px" width="400px"/>
